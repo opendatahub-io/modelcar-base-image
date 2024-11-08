@@ -15,6 +15,5 @@ FROM scratch AS build-release-stage
 
 WORKDIR /app
 COPY --from=build-stage /app/tailf ./tailf
-COPY /TAILME.md ./TAILME.md
 
 ENTRYPOINT ["/app/tailf", "/app/TAILME.md"]
