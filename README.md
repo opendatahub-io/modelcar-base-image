@@ -25,6 +25,26 @@ skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base:modelcar | jq
 
 follow tutorial from https://kserve.github.io/website/latest/admin/kubernetes_deployment/#3-install-kserve
 
+<details>
+
+```sh
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.1/cert-manager.yaml
+```
+
+```sh
+kubectl apply -f https://github.com/kserve/kserve/releases/download/v0.13.0/kserve.yaml
+```
+
+```sh
+kubectl apply -f https://github.com/kserve/kserve/releases/download/v0.13.0/kserve-cluster-resources.yaml
+```
+
+```sh
+kubectl patch configmap/inferenceservice-config -n kserve --type=strategic -p '{"data": {"deploy": "{\"defaultDeploymentMode\": \"RawDeployment\"}"}}'
+```
+
+</details>
+
 then:
 
 ```sh
@@ -32,18 +52,25 @@ then:
 kubectl apply -f isvc-modelcar.yaml
 ```
 
-The problem seems to be here:
+Logs looks successfull:
 
-```yaml
-    - args:
-        - sh
-        - -c
-        - ln -s /proc/$$$$/root/models /mnt/models && sleep infinity
-      image: quay.io/mmortari/demo20241108-base:modelcar
-      imagePullPolicy: IfNotPresent
-      name: modelcar
+![alt text](image.png)
+
+Mount looks successfull:
+
+![alt text](image-1.png)
+
+Model evaluation for Inference looks working:
+
+```sh
+kubectl port-forward svc/my-inference-service-predictor 8080:80
+# another terminal
+curl -s http://localhost:8080/v2/models
+curl -s -H "Content-Type: application/json" -d @./data/input0.json http://localhost:8080/v2/models/my-inference-service/infer | jq
 ```
+
+![](Screenshot%202024-11-13%20at%2018.58.23%20(2).png)
 
 ## Credits
 
-Many thanks Jason for the idea and to Daniele
+Many thanks Jason for the idea and to Daniele and Roland

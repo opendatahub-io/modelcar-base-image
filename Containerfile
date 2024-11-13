@@ -8,12 +8,12 @@ COPY go.mod go.sum ./
 COPY *.go ./
 RUN go mod download
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o ./tailf
+RUN CGO_ENABLED=0 GOOS=linux go build -o ./sh
 
 
 FROM scratch AS build-release-stage
 
-WORKDIR /app
-COPY --from=build-stage /app/tailf ./tailf
+WORKDIR /bin
+COPY --from=build-stage /app/sh ./sh
 
-ENTRYPOINT ["/app/tailf"]
+ENTRYPOINT ["/bin/sh"]
