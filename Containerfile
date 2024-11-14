@@ -13,8 +13,10 @@ RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 go build -o ./link-model
 
 
 FROM scratch AS build-release-stage
+ARG MODELCAR_LINK_FROM="/models"
+ARG MODELCAR_LINK_TO="/mnt/models"
 
 WORKDIR /bin
 COPY --from=build-stage /app/link-model-and-wait ./link-model-and-wait
 
-ENTRYPOINT ["/bin/link-model-and-wait"]
+ENTRYPOINT ["/bin/link-model-and-wait", ${MODELCAR_LINK_FROM}, ${MODELCAR_LINK_TO}]

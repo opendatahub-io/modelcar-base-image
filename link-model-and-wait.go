@@ -11,7 +11,7 @@ import (
 
 func main() {
 	fmt.Println("Hello, world! And thanks Jason for the idea, Daniele and Roland")
-	fmt.Println("Invoked with and will check later is consistent with KServe deployment", strings.Join(os.Args[1:], " ")) // TODO will need to check the args here.
+	fmt.Println("Invoked with and will check later is consistent with KServe deployment", strings.Join(os.Args, " ")) // TODO will need to check the args here.
 	doTheThing()
 	exitSignal := make(chan os.Signal, 1)
 	signal.Notify(exitSignal, syscall.SIGINT, syscall.SIGTERM)
