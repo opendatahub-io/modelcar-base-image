@@ -1,4 +1,21 @@
-# A minimal base image for sidecar puposes that does "nothing"
+# A minimal base image for KServe Modelcar/sidecar puposes that does "nothing"
+
+this is a PoC of a very small base-image that:
+
+- is just ~1Mb of base-image `FROM scratch`, if compared to busybox (~5Mb oom) or ubi-micro (~30Mb oom)
+  - irrelevant for GenAI (Gb oom), negligible for PredAI (Mb oom) 
+  - maybe even smaller if written in other PLs... what would Rust look like?
+
+- less "CVE updates"
+  - using only stdlib, and no deps, less frequent updates--focus only on linking and idle-wait
+
+this could be used as the base-image to build a [KServe modelcar](https://kserve.github.io/website/latest/modelserving/storage/oci/#prepare-an-oci-image-with-model-data):
+
+```Dockerfile
+FROM this-base-image
+WORKDIR /models
+COPY model.joblib ./
+```
 
 ## Local dev
 
@@ -18,6 +35,17 @@ skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base | jq
 
 ## Using
 
+can use it as the base-image to create a KServe Modelcar, ~like:
+
+```Dockerfile
+FROM --platform=$TARGETPLATFORM quay.io/mmortari/demo20241108-base:latest
+WORKDIR /models
+
+COPY model.joblib ./
+```
+
+in this case making it already available for multiple archs, to replicate the demo
+
 ```sh
 podman manifest create quay.io/mmortari/demo20241108-base:modelcar
 podman build --platform linux/amd64,linux/arm64 -f Containerfile-modelcar --manifest quay.io/mmortari/demo20241108-base:modelcar .
@@ -25,6 +53,10 @@ podman manifest push --all --rm quay.io/mmortari/demo20241108-base:modelcar
 skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base:modelcar | jq
 podman image rm quay.io/mmortari/demo20241108-base:latest
 ```
+
+we notice the KServe modelcar is available `quay.io/mmortari/demo20241108-base:modelcar`:
+
+![modelcar and base-image on Quay](image-2.png)
 
 follow tutorial from https://kserve.github.io/website/latest/admin/kubernetes_deployment/#3-install-kserve
 
