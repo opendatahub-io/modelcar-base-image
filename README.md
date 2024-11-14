@@ -12,7 +12,7 @@ podman run -it mio
 ```sh
 podman manifest create quay.io/mmortari/demo20241108-base
 podman build --platform linux/amd64,linux/arm64 -f Containerfile --manifest quay.io/mmortari/demo20241108-base .
-podman manifest push --all quay.io/mmortari/demo20241108-base 
+podman manifest push --all --rm quay.io/mmortari/demo20241108-base 
 skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base | jq
 ```
 
@@ -21,8 +21,9 @@ skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base | jq
 ```sh
 podman manifest create quay.io/mmortari/demo20241108-base:modelcar
 podman build --platform linux/amd64,linux/arm64 -f Containerfile-modelcar --manifest quay.io/mmortari/demo20241108-base:modelcar .
-podman manifest push --all quay.io/mmortari/demo20241108-base:modelcar
+podman manifest push --all --rm quay.io/mmortari/demo20241108-base:modelcar
 skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base:modelcar | jq
+podman image rm quay.io/mmortari/demo20241108-base:latest
 ```
 
 follow tutorial from https://kserve.github.io/website/latest/admin/kubernetes_deployment/#3-install-kserve
