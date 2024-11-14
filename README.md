@@ -10,16 +10,18 @@ podman run -it mio
 ## Publishing
 
 ```sh
-podman build -f Containerfile -t quay.io/mmortari/demo20241108-base .
-podman push quay.io/mmortari/demo20241108-base 
+podman manifest create quay.io/mmortari/demo20241108-base
+podman build --platform linux/amd64,linux/arm64 -f Containerfile --manifest quay.io/mmortari/demo20241108-base .
+podman manifest push --all --rm quay.io/mmortari/demo20241108-base 
 skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base | jq
 ```
 
 ## Using
 
 ```sh
-podman build -f Containerfile.modelcar -t quay.io/mmortari/demo20241108-base:modelcar .
-podman push quay.io/mmortari/demo20241108-base:modelcar
+podman manifest create quay.io/mmortari/demo20241108-base:modelcar
+podman build --platform linux/amd64,linux/arm64 -f Containerfile-modelcar --manifest quay.io/mmortari/demo20241108-base:modelcar .
+podman manifest push --all --rm quay.io/mmortari/demo20241108-base:modelcar
 skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base:modelcar | jq
 ```
 
@@ -29,17 +31,8 @@ follow tutorial from https://kserve.github.io/website/latest/admin/kubernetes_de
 
 ```sh
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.1/cert-manager.yaml
-```
-
-```sh
-kubectl apply -f https://github.com/kserve/kserve/releases/download/v0.13.0/kserve.yaml
-```
-
-```sh
-kubectl apply -f https://github.com/kserve/kserve/releases/download/v0.13.0/kserve-cluster-resources.yaml
-```
-
-```sh
+./repeat.sh kubectl apply -f https://github.com/kserve/kserve/releases/download/v0.13.0/kserve.yaml 
+./repeat.sh kubectl apply -f https://github.com/kserve/kserve/releases/download/v0.13.0/kserve-cluster-resources.yaml
 kubectl patch configmap/inferenceservice-config -n kserve --type=strategic -p '{"data": {"deploy": "{\"defaultDeploymentMode\": \"RawDeployment\"}"}}'
 ```
 
@@ -49,6 +42,9 @@ then:
 
 ```sh
 ./enable-modelcar.sh
+```
+
+```sh
 kubectl apply -f isvc-modelcar.yaml
 ```
 

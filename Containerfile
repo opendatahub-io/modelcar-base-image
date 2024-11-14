@@ -1,14 +1,15 @@
-FROM registry.access.redhat.com/ubi8/go-toolset:1.22 AS build-stage
+FROM --platform=$BUILDPLATFORM registry.access.redhat.com/ubi8/go-toolset:1.22 AS build-stage
+ARG TARGETOS
+ARG TARGETARCH
 
 USER root
-
 WORKDIR /app
 
 COPY go.mod go.sum ./
 COPY *.go ./
 RUN go mod download
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o ./link-model-and-wait
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 go build -o ./link-model-and-wait .
 
 
 FROM scratch AS build-release-stage

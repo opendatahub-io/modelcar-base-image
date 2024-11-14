@@ -1,5 +1,4 @@
-FROM quay.io/mmortari/demo20241108-base:latest
-
+FROM --platform=$TARGETPLATFORM quay.io/mmortari/demo20241108-base:latest
 WORKDIR /models
 
 COPY model.joblib ./
