@@ -1,0 +1,14 @@
+FROM registry.access.redhat.com/ubi8/ubi:latest AS build-stage
+RUN yum install -y rust-toolset
+
+WORKDIR /app
+
+COPY *.rs ./
+
+RUN rustc link-model-and-wait.rs
+
+FROM scratch AS build-release-stage
+WORKDIR /bin
+COPY --from=build-stage /app/link-model-and-wait ./link-model-and-wait
+
+ENTRYPOINT ["/bin/link-model-and-wait"]
