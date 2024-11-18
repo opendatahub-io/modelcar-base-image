@@ -1,0 +1,14 @@
+FROM --platform=$TARGETPLATFORM quay.io/mmortari/demo20241108-base:latest
+WORKDIR /models
+
+COPY granite/config.json ./
+COPY granite/generation_config.json ./
+COPY granite/model-00001-of-00002.safetensors ./
+COPY granite/model-00002-of-00002.safetensors ./
+COPY granite/model.safetensors.index.json ./
+COPY granite/special_tokens_map.json ./
+COPY granite/tokenizer.json ./
+COPY granite/tokenizer_config.json ./
+
+# HF modelcard
+COPY granite/README.md ./

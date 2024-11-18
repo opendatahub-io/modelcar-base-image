@@ -1,0 +1,10 @@
+link-model-and-wait
+granite/README.md
+granite/config.json
+granite/generation_config.json
+granite/model-00001-of-00002.safetensors
+granite/model-00002-of-00002.safetensors
+granite/model.safetensors.index.json
+granite/special_tokens_map.json
+granite/tokenizer.json
+granite/tokenizer_config.json
