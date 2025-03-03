@@ -1,0 +1,9 @@
+FROM --platform=$TARGETPLATFORM busybox
+WORKDIR /models
+
+COPY model.joblib ./
+
+# only for making sure what this image contains in directory
+# works only if FROM busybox, since the bare image does not provide sh/ls
+# but worked the Modelcar tutorial with the above WORKDIR /models, COPY model.joblib ./
+# RUN ls -la /models

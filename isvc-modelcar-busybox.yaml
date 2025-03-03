@@ -1,0 +1,17 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    openshift.io/display-name: my-inference-service
+    serving.knative.openshift.io/enablePassthrough: 'true'
+    sidecar.istio.io/inject: 'true'
+    sidecar.istio.io/rewriteAppHTTPProbers: 'true'
+  name: my-inference-service
+  labels:
+    opendatahub.io/dashboard: 'true'
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: sklearn
+      storageUri: oci://quay.io/mmortari/demo20241108-base:modelcar-busybox

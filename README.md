@@ -47,10 +47,20 @@ COPY model.joblib ./
 in this case making it already available for multiple archs, to replicate the demo
 
 ```sh
-podman manifest create quay.io/mmortari/demo20241108-base:modelcar
-podman build --platform linux/amd64,linux/arm64 -f Containerfile-modelcar --manifest quay.io/mmortari/demo20241108-base:modelcar .
-podman manifest push --all --rm quay.io/mmortari/demo20241108-base:modelcar
-skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base:modelcar | jq
+podman manifest create quay.io/mmortari/demo20241108-base:modelcar-busybox
+podman build --platform linux/amd64,linux/arm64 -f Containerfile-modelcar-busybox --manifest quay.io/mmortari/demo20241108-base:modelcar-busybox .
+podman manifest push --all --rm quay.io/mmortari/demo20241108-base:modelcar-busybox
+skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base:modelcar-busybox | jq
+podman image rm quay.io/mmortari/demo20241108-base:latest
+```
+
+
+```sh
+temp
+podman manifest create modelregistry-poc.quaydev.org/mmortari/demo20241108-base-private:modelcar-busybox
+podman build --platform linux/amd64,linux/arm64 -f Containerfile-modelcar-busybox --manifest modelregistry-poc.quaydev.org/mmortari/demo20241108-base-private:modelcar-busybox .
+podman manifest push --all --rm modelregistry-poc.quaydev.org/mmortari/demo20241108-base-private:modelcar-busybox
+skopeo inspect --raw docker://modelregistry-poc.quaydev.org/mmortari/demo20241108-base-private:modelcar-busybox | jq
 podman image rm quay.io/mmortari/demo20241108-base:latest
 ```
 
