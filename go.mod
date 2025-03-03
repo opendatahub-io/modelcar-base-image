@@ -1,3 +1,3 @@
 module link-model-and-wait
 
-go 1.24
+go 1.22
