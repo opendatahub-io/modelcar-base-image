@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM registry.access.redhat.com/ubi8/go-toolset:1.22.9-2.1740072407 AS build-stage
+FROM --platform=$BUILDPLATFORM registry.access.redhat.com/ubi8/go-toolset:1.22.9-2.1740072407@sha256:c7ebff72ffae334ad1b90b59189ac1ee21ad175f2014ddcb8563511350a0b23f AS build-stage
 ARG TARGETOS
 ARG TARGETARCH
 
