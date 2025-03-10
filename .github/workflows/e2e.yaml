@@ -52,3 +52,30 @@ jobs:
         curl -s -H "Content-Type: application/json" -d @e2e/data/input0.json http://localhost:8080/v2/models/my-inference-service/infer | jq
         curl -s -H "Content-Type: application/json" -d @e2e/data/input1.json http://localhost:8080/v2/models/my-inference-service/infer | jq
         curl -s -H "Content-Type: application/json" -d @e2e/data/input4.json http://localhost:8080/v2/models/my-inference-service/infer | jq
+    - name: Teardown basic testing of Isvc that has Modelcar
+      run: |
+        kubectl delete -f e2e/isvc-modelcar.yaml
+        pkill -f "kubectl port-forward"
+        sleep 5
+    - name: Apply Isvc using Modelcar WITH InitContainer
+      run: |
+        e2e/repeat.sh kubectl apply -f e2e/isvc-modelcar-with-initcontainer.yaml
+        echo "Waiting for Isvc..."
+        if ! kubectl wait --for=condition=Ready isvc/my-inference-service2 --timeout=240s ; then
+            kubectl events -A
+            kubectl describe isvc/my-inference-service2
+            exit 1
+        fi
+    - name: Testing of Isvc that has Modelcar WITH InitContainer
+      run: |
+        echo "Starting port-forward..."
+        kubectl port-forward svc/my-inference-service2-predictor 8080:80 &
+        PID=$!
+        sleep 2
+        echo "I have launched port-forward in background with: $PID."
+        echo "Check that OIP return the expected name"
+        curl -s http://localhost:8080/v2/models | jq -e '.models | index("my-inference-service2") != null'
+        echo "Check that OIP produces an Inference Prediction"
+        curl -s -H "Content-Type: application/json" -d @e2e/data/input0.json http://localhost:8080/v2/models/my-inference-service2/infer | jq
+        curl -s -H "Content-Type: application/json" -d @e2e/data/input1.json http://localhost:8080/v2/models/my-inference-service2/infer | jq
+        curl -s -H "Content-Type: application/json" -d @e2e/data/input4.json http://localhost:8080/v2/models/my-inference-service2/infer | jq

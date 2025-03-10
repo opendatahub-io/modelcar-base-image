@@ -1,0 +1,24 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: my-inference-service2
+spec:
+  predictor:
+    initContainers:
+    - resources:
+        limits:
+          cpu: 10m
+          memory: 15Mi
+        requests:
+          cpu: 10m
+          memory: 15Mi
+      name: modelcar-init-odh-style
+      image: 'my-modelcar:v1'
+      args:
+        - sh
+        - '-c'
+        - 'echo ''Pre-fetching modelcar my-modelcar:v1: '' && [ -d /models ] && [ "$$(ls -A /models)" ] && echo ''OK ... Prefetched and valid (/models exists)'' || (echo ''NOK ... Prefetched but modelcar is invalid (/models does not exist or is empty)'' && exit 1)'
+    model:
+      modelFormat:
+        name: sklearn
+      storageUri: oci://my-modelcar:v1
