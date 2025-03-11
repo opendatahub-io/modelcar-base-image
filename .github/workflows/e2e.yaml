@@ -1,0 +1,81 @@
+name: E2E
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  e2e-kserve:
+    name: E2E using KServe
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Build this modelcar-base-image
+      run: |
+        docker build -f Containerfile -t modelcar-base-image .
+        # explicit tagging so to load specific image into KinD (https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster:~:text=NOTE%3A%20The%20Kubernetes%20default%20pull%20policy%20is%20IfNotPresent%20unless%20the%20image%20tag%20is%20%3Alatest%20or%20omitted)
+        docker build -f e2e/Containerfile-modelcar -t my-modelcar:v1 .
+    - name: Start Kind Cluster
+      uses: helm/kind-action@v1
+      with:
+        cluster_name: kind
+    - name: Continue E2E by deploying KServe
+      run: |
+        kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.1/cert-manager.yaml
+        e2e/repeat.sh kubectl apply --server-side -f https://github.com/kserve/kserve/releases/download/v0.14.0/kserve.yaml
+        e2e/repeat.sh kubectl apply --server-side -f https://github.com/kserve/kserve/releases/download/v0.14.0/kserve-cluster-resources.yaml
+        kubectl patch configmap/inferenceservice-config -n kserve --type=strategic -p '{"data": {"deploy": "{\"defaultDeploymentMode\": \"RawDeployment\"}"}}'
+        e2e/enable-modelcar.sh
+        kind load docker-image -n "kind" "my-modelcar:v1"
+    - name: Apply Isvc using Modelcar # since the enable modelcar restart controller pod, better guard the kubectl apply
+      run: |
+        e2e/repeat.sh kubectl apply -f e2e/isvc-modelcar.yaml
+        echo "Waiting for Isvc..."
+        if ! kubectl wait --for=condition=Ready isvc/my-inference-service --timeout=240s ; then
+            kubectl events -A
+            kubectl describe isvc/my-inference-service
+            exit 1
+        fi
+    - name: Basic testing of Isvc that has Modelcar
+      run: |
+        echo "Starting port-forward..."
+        kubectl port-forward svc/my-inference-service-predictor 8080:80 &
+        PID=$!
+        sleep 2
+        echo "I have launched port-forward in background with: $PID."
+        echo "Check that OIP return the expected name"
+        curl -s http://localhost:8080/v2/models | jq -e '.models | index("my-inference-service") != null'
+        echo "Check that OIP produces an Inference Prediction"
+        curl -s -H "Content-Type: application/json" -d @e2e/data/input0.json http://localhost:8080/v2/models/my-inference-service/infer | jq
+        curl -s -H "Content-Type: application/json" -d @e2e/data/input1.json http://localhost:8080/v2/models/my-inference-service/infer | jq
+        curl -s -H "Content-Type: application/json" -d @e2e/data/input4.json http://localhost:8080/v2/models/my-inference-service/infer | jq
+    - name: Teardown basic testing of Isvc that has Modelcar
+      run: |
+        kubectl delete -f e2e/isvc-modelcar.yaml
+        pkill -f "kubectl port-forward"
+        sleep 5
+    - name: Apply Isvc using Modelcar WITH InitContainer
+      run: |
+        e2e/repeat.sh kubectl apply -f e2e/isvc-modelcar-with-initcontainer.yaml
+        echo "Waiting for Isvc..."
+        if ! kubectl wait --for=condition=Ready isvc/my-inference-service2 --timeout=240s ; then
+            kubectl events -A
+            kubectl describe isvc/my-inference-service2
+            exit 1
+        fi
+    - name: Testing of Isvc that has Modelcar WITH InitContainer
+      run: |
+        echo "Starting port-forward..."
+        kubectl port-forward svc/my-inference-service2-predictor 8080:80 &
+        PID=$!
+        sleep 2
+        echo "I have launched port-forward in background with: $PID."
+        echo "Check that OIP return the expected name"
+        curl -s http://localhost:8080/v2/models | jq -e '.models | index("my-inference-service2") != null'
+        echo "Check that OIP produces an Inference Prediction"
+        curl -s -H "Content-Type: application/json" -d @e2e/data/input0.json http://localhost:8080/v2/models/my-inference-service2/infer | jq
+        curl -s -H "Content-Type: application/json" -d @e2e/data/input1.json http://localhost:8080/v2/models/my-inference-service2/infer | jq
+        curl -s -H "Content-Type: application/json" -d @e2e/data/input4.json http://localhost:8080/v2/models/my-inference-service2/infer | jq
