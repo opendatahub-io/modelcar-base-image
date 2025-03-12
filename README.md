@@ -27,10 +27,10 @@ podman run -it mio
 ## Publishing
 
 ```sh
-podman manifest create quay.io/mmortari/demo20241108-base
-podman build --platform linux/amd64,linux/arm64 -f Containerfile --manifest quay.io/mmortari/demo20241108-base .
-podman manifest push --all --rm quay.io/mmortari/demo20241108-base 
-skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base | jq
+podman manifest create quay.io/mmortari/modelcar-base-image
+podman build --platform linux/amd64,linux/arm64 -f Containerfile --manifest quay.io/mmortari/modelcar-base-image .
+podman manifest push --all --rm quay.io/mmortari/modelcar-base-image 
+skopeo inspect --raw docker://quay.io/mmortari/modelcar-base-image | jq
 ```
 
 ## Using
@@ -38,7 +38,7 @@ skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base | jq
 can use it as the base-image to create a KServe Modelcar, ~like:
 
 ```Dockerfile
-FROM --platform=$TARGETPLATFORM quay.io/mmortari/demo20241108-base:latest
+FROM --platform=$TARGETPLATFORM quay.io/mmortari/modelcar-base-image:latest
 WORKDIR /models
 
 COPY model.joblib ./
