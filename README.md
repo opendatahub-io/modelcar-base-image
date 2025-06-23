@@ -54,6 +54,14 @@ skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base:modelcar-busybo
 podman image rm quay.io/mmortari/demo20241108-base:latest
 ```
 
+```sh
+podman manifest create quay.io/mmortari/demo20250623-odh-modelcar
+podman build --platform linux/amd64,linux/arm64 -f Containerfile-modelcar --manifest quay.io/mmortari/demo20250623-odh-modelcar .
+podman manifest push --all --rm quay.io/mmortari/demo20250623-odh-modelcar
+skopeo inspect --raw docker://quay.io/mmortari/demo20250623-odh-modelcar | jq
+podman image rm quay.io/mmortari/demo20250623-odh-modelcar:latest
+```
+
 
 ```sh
 temp
