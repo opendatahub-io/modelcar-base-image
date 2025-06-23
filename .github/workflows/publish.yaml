@@ -37,8 +37,8 @@ jobs:
         image: ${{ steps.build_image.outputs.image }}
         tags: ${{ steps.build_image.outputs.tags }}
         registry: ${{ env.IMAGE_REGISTRY }}
-        username: ${{ env.QUAY_MODELCAR_BOT_USERNAME }} # per RHOAIENG-21902
-        password: ${{ env.QUAY_MODELCAR_BOT_TOKEN }} # per RHOAIENG-21902
+        username: ${{ secrets.QUAY_MODELCAR_BOT_USERNAME }} # per RHOAIENG-21902
+        password: ${{ secrets.QUAY_MODELCAR_BOT_TOKEN }} # per RHOAIENG-21902
         # username: ${{ env.REGISTRY_USER }} was used to push to ghcr.io registry
         # password: ${{ env.REGISTRY_PASSWORD }} was used to push to ghcr.io registry
 
