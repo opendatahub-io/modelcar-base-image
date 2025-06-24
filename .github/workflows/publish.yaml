@@ -12,6 +12,8 @@ jobs:
   build:
     name: Build and Publish Image
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # needed for signing the images with GitHub OIDC Token
 
     steps:
     - uses: actions/checkout@v4
@@ -47,3 +49,9 @@ jobs:
     - name: Echo outputs
       run: |
         echo "${{ toJSON(steps.push.outputs) }}"
+
+    - name: Set up Cosign
+      uses: sigstore/cosign-installer@v3
+    - name: Cosign Keyless Sign
+      run: |
+        cosign sign --yes ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
