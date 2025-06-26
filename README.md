@@ -118,6 +118,33 @@ curl -s -H "Content-Type: application/json" -d @./data/input0.json http://localh
 
 ![](Screenshot%202024-11-13%20at%2018.58.23%20(2).png)
 
+## Image Signature Verification
+
+The published images are signed using cosign and can be verified to ensure authenticity and integrity. You can verify the image signature using the following command:
+
+```sh
+cosign verify \
+  --certificate-identity "https://github.com/opendatahub-io/modelcar-base-image/.github/workflows/publish.yaml@refs/heads/main" \             
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  quay.io/opendatahub/odh-modelcar-base-image:latest
+```
+
+Example output:
+
+```
+Verification for quay.io/opendatahub/odh-modelcar-base-image:latest --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - Existence of the claims in the transparency log was verified offline
+  - The code-signing certificate was verified using trusted certificate authority certificates
+(...)
+```
+
+This verification ensures that:
+- The image was built and signed by the GitHub Action workflow in this repository
+- The signature is cryptographically verified
+- The image hasn't been tampered with since signing
+
 ## Credits
 
 Many thanks Jason for the idea and to Daniele and Roland
