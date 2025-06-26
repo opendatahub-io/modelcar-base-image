@@ -57,4 +57,4 @@ jobs:
       uses: sigstore/cosign-installer@v3
     - name: Cosign Keyless Sign
       run: |
-        cosign sign --yes ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
+        cosign sign --yes ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}
