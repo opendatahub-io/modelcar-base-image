@@ -15,6 +15,8 @@ jobs:
   build:
     name: Build and Publish Image
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # needed for signing the images with GitHub OIDC Token
 
     steps:
     - uses: actions/checkout@v4
@@ -30,6 +32,13 @@ jobs:
         containerfiles: |
           ./Containerfile
 
+    - name: Log in to Quay.io
+      uses: redhat-actions/podman-login@v1
+      with:
+        username: ${{ secrets.QUAY_MODELCAR_BOT_USERNAME }} # per RHOAIENG-21902
+        password: ${{ secrets.QUAY_MODELCAR_BOT_TOKEN }} # per RHOAIENG-21902
+        registry: ${{ env.IMAGE_REGISTRY }}
+
     - name: Push To Registry
       uses: redhat-actions/push-to-registry@v2
       id: push
@@ -37,11 +46,15 @@ jobs:
         image: ${{ steps.build_image.outputs.image }}
         tags: ${{ steps.build_image.outputs.tags }}
         registry: ${{ env.IMAGE_REGISTRY }}
-        username: ${{ secrets.QUAY_MODELCAR_BOT_USERNAME }} # per RHOAIENG-21902
-        password: ${{ secrets.QUAY_MODELCAR_BOT_TOKEN }} # per RHOAIENG-21902
         # username: ${{ env.REGISTRY_USER }} was used to push to ghcr.io registry
         # password: ${{ env.REGISTRY_PASSWORD }} was used to push to ghcr.io registry
 
     - name: Echo outputs
       run: |
         echo "${{ toJSON(steps.push.outputs) }}"
+
+    - name: Set up Cosign
+      uses: sigstore/cosign-installer@v3
+    - name: Cosign Keyless Sign
+      run: |
+        cosign sign --yes ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
