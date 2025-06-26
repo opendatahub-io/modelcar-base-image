@@ -124,7 +124,7 @@ The published images are signed using cosign and can be verified to ensure authe
 
 ```sh
 cosign verify \
-  --certificate-identity "https://github.com/opendatahub-io/modelcar-base-image/.github/workflows/publish.yaml@refs/heads/main" \             
+  --certificate-identity "https://github.com/opendatahub-io/modelcar-base-image/.github/workflows/publish.yaml@refs/heads/main" \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
   quay.io/opendatahub/odh-modelcar-base-image:latest
 ```
