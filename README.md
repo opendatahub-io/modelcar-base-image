@@ -38,7 +38,7 @@ skopeo inspect --raw docker://quay.io/mmortari/modelcar-base-image | jq
 can use it as the base-image to create a KServe Modelcar, ~like:
 
 ```Dockerfile
-FROM --platform=$TARGETPLATFORM quay.io/mmortari/modelcar-base-image:latest
+FROM --platform=$TARGETPLATFORM quay.io/opendatahub/odh-modelcar-base-image:latest
 WORKDIR /models
 
 COPY model.joblib ./
