@@ -1,48 +1,65 @@
 # A minimal base image for KServe Modelcar/sidecar puposes that does "nothing"
 
-this is a PoC of a very small base-image that:
+this is a very small base-image that:
 
-- is just ~1Mb of base-image `FROM scratch`, if compared to busybox (~5Mb oom) or ubi-micro (~30Mb oom)
+- is just ~1Mb of base-image `FROM scratch`, if compared to busybox (~5Mb [oom](https://en.wikipedia.org/wiki/OOM?utm_source=chatgpt.com#:~:text=Order%20of%20magnitude%2C%20a%20measurement%20term)) or ubi-micro (~30Mb oom)
   - irrelevant for GenAI (Gb oom), negligible for PredAI (Mb oom) 
   - maybe even smaller if written in other PLs... what would Rust look like?
 
 - less "CVE updates"
   - using only stdlib, and no deps, less frequent updates--focus only on linking and idle-wait
 
-this could be used as the base-image to build a [KServe modelcar](https://kserve.github.io/website/latest/modelserving/storage/oci/#prepare-an-oci-image-with-model-data):
+this could be used as the base-image to build a [KServe ModelCar🚗](https://kserve.github.io/website/latest/modelserving/storage/oci/#prepare-an-oci-image-with-model-data):
 
 ```Dockerfile
-FROM this-base-image
+FROM quay.io/opendatahub/odh-modelcar-base-image
 WORKDIR /models
 COPY model.joblib ./
 ```
 
-## Local dev
+This repo publishes this image to [quay.io/opendatahub/odh-modelcar-base-image](https://quay.io/repository/opendatahub/odh-modelcar-base-image?tab=tags&tag=latest).
 
-```sh
-podman build -f Containerfile -t mio .
-podman run -it mio
-```
+## Using this base-image for a KServe ModelCar🚗
 
-## Publishing
-
-```sh
-podman manifest create quay.io/mmortari/modelcar-base-image
-podman build --platform linux/amd64,linux/arm64 -f Containerfile --manifest quay.io/mmortari/modelcar-base-image .
-podman manifest push --all --rm quay.io/mmortari/modelcar-base-image 
-skopeo inspect --raw docker://quay.io/mmortari/modelcar-base-image | jq
-```
-
-## Using
-
-can use it as the base-image to create a KServe Modelcar, ~like:
+You can use it as the base-image to create a KServe ModelCar🚗, ~like:
 
 ```Dockerfile
+# file: Containerfile-modelcar
 FROM --platform=$TARGETPLATFORM quay.io/opendatahub/odh-modelcar-base-image:latest
 WORKDIR /models
 
 COPY model.joblib ./
 ```
+
+or ~like:
+
+```Dockerfile
+# file: Containerfile-modelcar
+FROM --platform=$TARGETPLATFORM quay.io/opendatahub/odh-modelcar-base-image:latest
+WORKDIR /models
+
+COPY config.json ./
+COPY generation_config.json ./
+COPY model-00001-of-00002.safetensors ./
+COPY model-00002-of-00002.safetensors ./
+COPY model.safetensors.index.json ./
+COPY special_tokens_map.json ./
+COPY tokenizer.json ./
+COPY tokenizer_config.json ./
+COPY README.md ./
+```
+
+Assuming you want to publish this ModelCar🚗 to `quay.io/mmortari/demo20241108-base:modelcar`, you can publish it as a multi-arch ModelCar🚗 with:
+
+```sh
+podman manifest create quay.io/mmortari/demo20241108-base:modelcar
+podman build --platform linux/amd64,linux/arm64 -f Containerfile-modelcar --manifest quay.io/mmortari/demo20241108-base:modelcar .
+podman manifest push --all --rm quay.io/mmortari/demo20241108-base:modelcar
+skopeo inspect --raw docker://quay.io/mmortari/demo20241108-base:modelcar | jq
+podman image rm quay.io/mmortari/demo20241108-base:modelcar
+```
+
+<!-- other demos
 
 in this case making it already available for multiple archs, to replicate the demo
 
@@ -72,9 +89,11 @@ skopeo inspect --raw docker://modelregistry-poc.quaydev.org/mmortari/demo2024110
 podman image rm quay.io/mmortari/demo20241108-base:latest
 ```
 
+-->
+
 we notice the KServe modelcar is available `quay.io/mmortari/demo20241108-base:modelcar`:
 
-![modelcar and base-image on Quay](image-2.png)
+![modelcar and base-image on Quay](./docs/imgs/image-2.png)
 
 follow tutorial from https://kserve.github.io/website/latest/admin/kubernetes_deployment/#3-install-kserve
 
@@ -101,11 +120,11 @@ kubectl apply -f isvc-modelcar.yaml
 
 Logs looks successfull:
 
-![alt text](image.png)
+![alt text](./docs/imgs/image.png)
 
 Mount looks successfull:
 
-![alt text](image-1.png)
+![alt text](./docs/imgs/image-1.png)
 
 Model evaluation for Inference looks working:
 
@@ -116,7 +135,7 @@ curl -s http://localhost:8080/v2/models
 curl -s -H "Content-Type: application/json" -d @./data/input0.json http://localhost:8080/v2/models/my-inference-service/infer | jq
 ```
 
-![](Screenshot%202024-11-13%20at%2018.58.23%20(2).png)
+![](./docs/imgs/Screenshot%202024-11-13%20at%2018.58.23%20(2).png)
 
 ## Image Signature Verification
 
@@ -144,6 +163,28 @@ This verification ensures that:
 - The image was built and signed by the GitHub Action workflow in this repository
 - The signature is cryptographically verified
 - The image hasn't been tampered with since signing
+
+## Local dev
+
+You can build the Go application by building the container with:
+
+```sh
+podman build -f Containerfile -t mio .
+podman run -it mio
+```
+
+## Local Publishing
+
+This repo already publishes the images to [quay.io/opendatahub/odh-modelcar-base-image](https://quay.io/repository/opendatahub/odh-modelcar-base-image?tab=tags&tag=latest).
+
+If you are doing local development and you want to publish this image somewhere (e.g.: to `quay.io/mmortari/modelcar-base-image`), you can follow similarly to instructions below:
+
+```sh
+podman manifest create quay.io/mmortari/modelcar-base-image
+podman build --platform linux/amd64,linux/arm64 -f Containerfile --manifest quay.io/mmortari/modelcar-base-image .
+podman manifest push --all --rm quay.io/mmortari/modelcar-base-image 
+skopeo inspect --raw docker://quay.io/mmortari/modelcar-base-image | jq
+```
 
 ## Credits
 
