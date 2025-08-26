@@ -1,4 +1,4 @@
 FROM --platform=$TARGETPLATFORM modelcar-base-image
 WORKDIR /models
 
-COPY model.joblib ./
+COPY demos/model.joblib ./
