@@ -79,3 +79,37 @@ jobs:
         curl -s -H "Content-Type: application/json" -d @e2e/data/input0.json http://localhost:8080/v2/models/my-inference-service2/infer | jq
         curl -s -H "Content-Type: application/json" -d @e2e/data/input1.json http://localhost:8080/v2/models/my-inference-service2/infer | jq
         curl -s -H "Content-Type: application/json" -d @e2e/data/input4.json http://localhost:8080/v2/models/my-inference-service2/infer | jq
+
+  e2e-python:
+    name: E2E using Python
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Install UV
+      uses: astral-sh/setup-uv@v5
+    - name: Run tests
+      working-directory: python
+      run: |
+        make sync test
+    - name: Run the build and install the python wheel
+      working-directory: python
+      run: |
+        make build
+        pip install dist/modelcar_base_image-*.whl
+    - name: Check if there are uncommitted file changes
+      run: |
+        clean=$(git status --porcelain)
+        if [[ -z "$clean" ]]; then
+          echo "Empty git status --porcelain: $clean"
+        else
+          echo "Uncommitted file changes detected: $clean"
+          git diff
+          exit 1
+        fi
+    - name: Check an embedded oci-layout is created as expected
+      run: |
+        python -c "from modelcar_base_image.embedded_oci_layout import embedded_oci_layout; embedded_oci_layout('/tmp/embedded_oci_layout')"
+        find /tmp/embedded_oci_layout -type f -exec ls -la {} \;
+        # Compare the contents of SRC oci-layout and /tmp/embedded_oci_layout
+        diff -r python/src/modelcar_base_image/embedded_oci_layout /tmp/embedded_oci_layout

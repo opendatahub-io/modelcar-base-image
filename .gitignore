@@ -8,3 +8,4 @@ granite/model.safetensors.index.json
 granite/special_tokens_map.json
 granite/tokenizer.json
 granite/tokenizer_config.json
+__pycache__
