@@ -1,0 +1,46 @@
+name: Build Container Image
+
+on:
+  push:
+  workflow_dispatch:
+
+env:
+    IMAGE_NAME: odh-modelcar-base-image # per RHOAIENG-21902
+    IMAGE_TAGS: latest ${{ github.sha }}
+
+jobs:
+  build:
+    name: Build Container Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install qemu dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+
+      - name: Build Image
+        id: build_image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          oci: true # must have OCI format
+          archs: amd64, arm64
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAGS }}
+          containerfiles: |
+            ./Containerfile
+
+      - name: Save container image
+        run: |
+          buildah push \
+            --format oci \
+            modelcar-base-image \
+            oci-archive:modelcar-base-image.tar
+
+      - name: Upload container image
+        uses: actions/upload-artifact@v4
+        with:
+          name: modelcar-base-image
+          path: modelcar-base-image.tar
