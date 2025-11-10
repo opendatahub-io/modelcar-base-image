@@ -1,12 +1,11 @@
 import logging
-from pathlib import Path
-import pathlib
 import shutil
 import subprocess
 import typing
 import os
 
 from modelcar_base_image.constants import EMBEDDED_OCI_LAYOUT_DIR
+from pathlib import Path
 
 
 logger = logging.getLogger(__name__)
@@ -45,6 +44,6 @@ def embedded_oci_layout(
     if not embedded_path.exists():
         raise FileNotFoundError(f"Embedded data directory {embedded_path} not found")
     
-    target_path = pathlib.Path(target_path).expanduser().resolve()
+    target_path = Path(target_path).expanduser().resolve()
     target_path.mkdir(parents=True, exist_ok=True)
     shutil.copytree(embedded_path, target_path, dirs_exist_ok=True)
