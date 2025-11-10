@@ -97,6 +97,16 @@ jobs:
       run: |
         make build
         pip install dist/modelcar_base_image-*.whl
+    - name: Check if there are uncommitted file changes
+      run: |
+        clean=$(git status --porcelain)
+        if [[ -z "$clean" ]]; then
+          echo "Empty git status --porcelain: $clean"
+        else
+          echo "Uncommitted file changes detected: $clean"
+          git diff
+          exit 1
+        fi
     - name: Check an embedded oci-layout is created as expected
       run: |
         python -c "from modelcar_base_image.embedded_oci_layout import embedded_oci_layout; embedded_oci_layout('/tmp/embedded_oci_layout')"
