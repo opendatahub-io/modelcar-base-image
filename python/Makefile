@@ -1,4 +1,4 @@
-.PHONY: Sync
+.PHONY: sync
 sync: ## Sync dependencies (install from lock file)
 	uv sync --all-extras
 
