@@ -22,7 +22,7 @@ jobs:
     - name: UV build
       working-directory: python
       run: |
-        make sync build
+        make build
     - name: Store the distribution packages
       uses: actions/upload-artifact@v5
       with:
