@@ -96,7 +96,7 @@ jobs:
       working-directory: python
       run: |
         make build
-        uv pip install dist/modelcar_base_image-*.whl
+        pip install dist/modelcar_base_image-*.whl
     - name: Check if there are uncommitted file changes
       run: |
         clean=$(git status --porcelain)
