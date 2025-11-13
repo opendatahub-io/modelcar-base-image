@@ -1,6 +1,6 @@
 [project]
 name = "modelcar-base-image"
-version = "0.1.0"
+version = "0.1.1"
 description = "A minimal base image for KServe Modelcar/sidecar"
 readme = "README.md"
 authors = [
