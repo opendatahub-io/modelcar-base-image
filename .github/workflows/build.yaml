@@ -3,6 +3,7 @@ name: Build Container Image
 on:
   push:
   workflow_dispatch:
+  pull_request:
 
 env:
     IMAGE_NAME: odh-modelcar-base-image # per RHOAIENG-21902
