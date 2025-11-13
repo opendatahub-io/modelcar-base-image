@@ -35,13 +35,13 @@ jobs:
 
       - name: Save container image
         run: |
-          buildah push \
+          buildah manifest push --all \
             --format oci \
-            modelcar-base-image \
-            oci-archive:modelcar-base-image.tar
+            ${{ env.IMAGE_NAME }}:latest \
+            oci-archive:${{ env.IMAGE_NAME }}.tar
 
       - name: Upload container image
         uses: actions/upload-artifact@v4
         with:
-          name: modelcar-base-image
-          path: modelcar-base-image.tar
+          name: ${{ env.IMAGE_NAME }}
+          path: ${{ env.IMAGE_NAME }}.tar
